@@ -15,7 +15,7 @@ try{
         items,
         address,
         amount,
-        PaymentMethod:"COD",
+        paymentMethod:"COD",
         payment:false,
         date:Date.now(),
      
@@ -26,10 +26,10 @@ try{
     await newOrder.save();
 
 
-    
+
     await userModel.findByIdAndUpdate(userId,{cartData:{}})
 
-    res.json({success:true,message:"Order Placed Successfully"});
+    res.json({success:true,message:"Order Placed "});
 
 
 
@@ -85,6 +85,13 @@ const allOrders=async(req,res)=>{
 // user order Data for frontend 
 const userOrders=async(req,res)=>{
     try{
+      
+
+      const {userId}=req.body;
+
+      const orders=await orderModel.find({userId});  
+      
+       res.json({success:true,orders});
 
     }catch(err){
         console.log(err);
