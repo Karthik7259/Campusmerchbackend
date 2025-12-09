@@ -190,7 +190,7 @@ const verifyRazor=async(req,res)=>{
                             </p>
                             
                             <p style="margin-top: 30px;">We'll notify you once your order is shipped.</p>
-                            <p>Best regards,<br>Gift4Corp Team</p>
+                            <p>Best regards,<br>YourCampusMerch Team</p>
                         </div>
                     `;
                     
@@ -325,7 +325,7 @@ const updateStatus=async(req,res)=>{
                                 </div>
                                 
                                 <p style="margin-top: 30px;">Thank you for shopping with us!</p>
-                                <p style="color: #666;">Best regards,<br><strong>Gift4Corp Team</strong></p>
+                                <p style="color: #666;">Best regards,<br><strong>YourCampusMerch Team</strong></p>
                             </div>
                         </div>
                     `;
@@ -379,7 +379,7 @@ const updateStatus=async(req,res)=>{
                                 </div>
                                 
                                 <p style="margin-top: 30px;">Thank you for your patience!</p>
-                                <p style="color: #666;">Best regards,<br><strong>Gift4Corp Team</strong></p>
+                                <p style="color: #666;">Best regards,<br><strong>YourCampusMerch Team</strong></p>
                             </div>
                         </div>
                     `;
@@ -434,7 +434,7 @@ const updateStatus=async(req,res)=>{
                                 </div>
                                 
                                 <p style="margin-top: 30px;">Get ready to receive your order soon!</p>
-                                <p style="color: #666;">Best regards,<br><strong>Gift4Corp Team</strong></p>
+                                <p style="color: #666;">Best regards,<br><strong>YourCampusMerch Team</strong></p>
                             </div>
                         </div>
                     `;
@@ -498,7 +498,7 @@ const updateStatus=async(req,res)=>{
                                 </div>
                                 
                                 <p style="margin-top: 30px;">Almost there! Thank you for your patience.</p>
-                                <p style="color: #666;">Best regards,<br><strong>Gift4Corp Team</strong></p>
+                                <p style="color: #666;">Best regards,<br><strong>YourCampusMerch Team</strong></p>
                             </div>
                         </div>
                     `;
@@ -563,7 +563,7 @@ const updateStatus=async(req,res)=>{
                                 </div>
                                 
                                 <p style="margin-top: 30px;">Enjoy your purchase!</p>
-                                <p style="color: #666;">Best regards,<br><strong>Gift4Corp Team</strong></p>
+                                <p style="color: #666;">Best regards,<br><strong>YourCampusMerch Team</strong></p>
                             </div>
                         </div>
                     `;
@@ -600,7 +600,7 @@ const updateStatus=async(req,res)=>{
                                 </table>
                                 
                                 <p style="margin-top: 30px;">Thank you for shopping with us!</p>
-                                <p style="color: #666;">Best regards,<br><strong>Gift4Corp Team</strong></p>
+                                <p style="color: #666;">Best regards,<br><strong>YourCampusMerch Team</strong></p>
                             </div>
                         </div>
                     `;

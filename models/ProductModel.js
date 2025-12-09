@@ -35,15 +35,17 @@ const productSchema = new mongoose.Schema(
         type:Array,
         required:true,
       },
+      quantity:{
+        type:Number,
+        default:0,
+      },
       bestseller:{   
         type:Boolean,
-        
       },
       collegeMerchandise:{   
         type:String,
         required:true,
       },
-     
       date:{
         type:Number,
         default:Date.now

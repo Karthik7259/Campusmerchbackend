@@ -32,7 +32,7 @@ app.use('/api/college-merchandise',collegeMerchandiseRouter);
 
 
 app.get('/',(req,res)=>{
-    res.send('Gift4Corp Backend is running');
+    res.send('YourCampusMerch Backend is running');
 });
 
 app.listen(port,()=>console.log(`Server is running on port ${port}`));
