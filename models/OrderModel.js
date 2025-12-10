@@ -10,6 +10,13 @@ const orderSchema = new mongoose.Schema({
     paymentMethod: {type:String,required:true},
     payment: {type:Boolean,required:true,default:false},
     date: {type:Number,required:true},
+    shippingFee: {type:Number,default:100},
+    // Shiprocket shipping fields
+    shiprocket_order_id: {type:Number},
+    shipment_id: {type:Number},
+    awb_code: {type:String},
+    courier_name: {type:String},
+    tracking_url: {type:String},
 });
 
 

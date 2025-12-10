@@ -9,17 +9,33 @@ const addToCart = async (req, res) => {
     try{
       const {userId,itemId,size}=req.body;
       
+      console.log('Add to cart request:', { userId, itemId, size });
+      
+      // Validate input
+      if(!userId || !itemId || !size){
+        console.log('Missing required fields:', { userId: !!userId, itemId: !!itemId, size: !!size });
+        return res.status(400).json({success:false,message:"Missing required fields"});
+      }
+      
       // Check product availability
       const product = await productModel.findById(itemId);
       if(!product){
+        console.log('Product not found:', itemId);
         return res.status(404).json({success:false,message:"Product not found"});
       }
+      
+      console.log('Product found:', { name: product.name, quantity: product.quantity });
       
       if(product.quantity === 0){
         return res.status(400).json({success:false,message:"Product is out of stock"});
       }
       
       const userData=await userModel.findById(userId);
+      if(!userData){
+        console.log('User not found:', userId);
+        return res.status(404).json({success:false,message:"User not found"});
+      }
+      
       let cartData=await userData.cartData
       
       // Calculate current quantity for this item
@@ -27,6 +43,8 @@ const addToCart = async (req, res) => {
       if(cartData[itemId] && cartData[itemId][size]){
         currentQuantity = cartData[itemId][size];
       }
+      
+      console.log('Current cart quantity:', currentQuantity, 'Available stock:', product.quantity);
       
       // Check if adding one more would exceed stock
       if(currentQuantity >= product.quantity){
@@ -49,7 +67,7 @@ const addToCart = async (req, res) => {
       res.json({success:true,message:"Added to Cart"});
 
     }catch(err){
-        console.log(err);
+        console.log('Add to cart error:', err);
         res.status(500).json({success:false,message:err.message})
     }
 

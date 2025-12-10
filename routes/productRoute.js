@@ -1,7 +1,7 @@
 import express from 'express';
 
 
-import  {addProduct, listProducts, removeProduct,singleProduct, updateProduct} from '../controllers/productController.js';
+import  {addProduct, listProducts, removeProduct,singleProduct, updateProduct, fixNegativeStock} from '../controllers/productController.js';
 import upload from '../middleware/multer.js';
 import adminAuth from '../middleware/adminAuth.js';
 
@@ -16,6 +16,7 @@ productRouter.put('/update',adminAuth,upload.fields([{ name: 'image1', maxCount:
 productRouter.delete('/remove',adminAuth,removeProduct)   
 productRouter.post('/single',singleProduct);
 productRouter.get('/list',listProducts);
+productRouter.post('/fix-negative-stock',adminAuth,fixNegativeStock);
 
 export default productRouter;
 

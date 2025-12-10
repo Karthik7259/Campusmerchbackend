@@ -3,6 +3,7 @@ import userModel from "../models/userModel.js";
 import productModel from "../models/ProductModel.js";
 import razorpay from "razorpay";
 import sendEmail from "../service/sendEmail.js";
+import { createCompleteOrder } from "./shiprocketController.js";
 // placing orders using COD METHOD
 
 const currency='inr'
@@ -23,7 +24,18 @@ const placeOrder=async(req,res)=>{
 try{
 
 
-    const {userId,items,amount,address}=req.body;
+    const {userId,items,amount,address,shippingFee}=req.body;
+    
+    // First, validate all items have sufficient stock
+    for(const item of items){
+        const product = await productModel.findById(item._id);
+        if(!product){
+            return res.status(400).json({success:false,message:`Product ${item.name} not found`});
+        }
+        if(product.quantity < item.quantity){
+            return res.status(400).json({success:false,message:`Insufficient stock for ${product.name}. Only ${product.quantity} available.`});
+        }
+    }
 
     const orderData={
         userId,
@@ -33,7 +45,7 @@ try{
         paymentMethod:"COD",
         payment:false,
         date:Date.now(),
-     
+        shippingFee: shippingFee || 100
     }
 
 
@@ -48,6 +60,30 @@ try{
     }
 
     await userModel.findByIdAndUpdate(userId,{cartData:{}})
+
+    // Create Shiprocket shipment (async - don't block order placement)
+    try {
+        const shiprocketData = await createCompleteOrder({
+            body: {
+                orderId: newOrder._id.toString(),
+                orderAmount: amount,
+                items: items,
+                address: address,
+                paymentMethod: 'COD',
+                shippingFee: shippingFee
+            }
+        });
+        
+        if(shiprocketData.success && shiprocketData.data) {
+            await orderModel.findByIdAndUpdate(newOrder._id, {
+                shiprocket_order_id: shiprocketData.data.order_id,
+                shipment_id: shiprocketData.data.shipment_id
+            });
+        }
+    } catch (shiprocketErr) {
+        console.error('Shiprocket error (non-blocking):', shiprocketErr);
+        // Don't fail the order if Shiprocket fails
+    }
 
     res.json({success:true,message:"Order Placed "});
 
@@ -218,6 +254,33 @@ const verifyRazor=async(req,res)=>{
                 }
             } catch (emailErr) {
                 console.error('Error sending payment confirmation email:', emailErr);
+            }
+            
+            // Create Shiprocket shipment (async - don't block payment confirmation)
+            try {
+                const order = await orderModel.findById(orderInfo.receipt);
+                if(order && order.items) {
+                    const shiprocketData = await createCompleteOrder({
+                        body: {
+                            orderId: order._id.toString(),
+                            orderAmount: order.amount,
+                            items: order.items,
+                            address: order.address,
+                            paymentMethod: 'Prepaid',
+                            shippingFee: order.shippingFee || 100
+                        }
+                    });
+                    
+                    if(shiprocketData.success && shiprocketData.data) {
+                        await orderModel.findByIdAndUpdate(order._id, {
+                            shiprocket_order_id: shiprocketData.data.order_id,
+                            shipment_id: shiprocketData.data.shipment_id
+                        });
+                    }
+                }
+            } catch (shiprocketErr) {
+                console.error('Shiprocket error (non-blocking):', shiprocketErr);
+                // Don't fail the payment if Shiprocket fails
             }
             
             res.json({success:true,message:"Payment Successful" });
@@ -641,4 +704,35 @@ const updateStatus=async(req,res)=>{
 }
 
 
-export {placeOrder,placeOrderStripe,placeOrderRazorpay,allOrders,userOrders,updateStatus,verifyRazor};
+// Get order tracking details
+const getOrderTracking = async(req,res) => {
+    try {
+        const { orderId } = req.params;
+        
+        const order = await orderModel.findById(orderId);
+        
+        if(!order) {
+            return res.status(404).json({success: false, message: "Order not found"});
+        }
+        
+        // Return tracking details
+        const trackingData = {
+            orderId: order._id,
+            status: order.status,
+            awb_code: order.awb_code,
+            courier_name: order.courier_name,
+            tracking_url: order.tracking_url,
+            shipment_id: order.shipment_id,
+            date: order.date
+        };
+        
+        res.json({success: true, tracking: trackingData});
+        
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({success: false, error: err.message});
+    }
+}
+
+
+export {placeOrder,placeOrderStripe,placeOrderRazorpay,allOrders,userOrders,updateStatus,verifyRazor,getOrderTracking};

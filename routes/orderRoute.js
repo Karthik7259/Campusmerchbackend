@@ -1,6 +1,6 @@
 import express from 'express';
 
-import {placeOrder,placeOrderStripe,placeOrderRazorpay,allOrders,userOrders,updateStatus, verifyRazor} from '../controllers/orderController.js';
+import {placeOrder,placeOrderStripe,placeOrderRazorpay,allOrders,userOrders,updateStatus, verifyRazor, getOrderTracking} from '../controllers/orderController.js';
 import adminAuth from '../middleware/adminAuth.js';
 import authuser from '../middleware/auth.js';
 
@@ -21,6 +21,9 @@ OrderRouter.post('/userorders',authuser,userOrders);
 
 // verify Razorpay payment
 OrderRouter.post('/verifyRazorpay',authuser,verifyRazor);
+
+// Get order tracking
+OrderRouter.get('/tracking/:orderId',authuser,getOrderTracking);
 
 
 export default OrderRouter;

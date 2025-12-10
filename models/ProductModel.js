@@ -49,6 +49,22 @@ const productSchema = new mongoose.Schema(
         type:String,
         required:true,
       },
+      weight:{
+        type:Number,
+        default:400,
+      },
+      length:{
+        type:Number,
+        default:30,
+      },
+      breadth:{
+        type:Number,
+        default:27,
+      },
+      height:{
+        type:Number,
+        default:2,
+      },
       date:{
         type:Number,
         default:Date.now

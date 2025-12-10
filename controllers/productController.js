@@ -59,7 +59,7 @@ import productModel from '../models/ProductModel.js';
 
 const addProduct = async (req, res) => {
   try {
-    const { name, description, price, Mrpprice, category, subCategory, sizes, bestseller, collegeMerchandise, quantity, color } = req.body;
+    const { name, description, price, Mrpprice, category, subCategory, sizes, bestseller, collegeMerchandise, quantity, color, weight, length, breadth, height } = req.body;
 
     const image1 = req.files.image1 && req.files.image1[0];
     const image2 = req.files.image2 && req.files.image2[0];
@@ -89,6 +89,12 @@ const addProduct = async (req, res) => {
       image: imagesUrl,
       date: Date.now(),
     };
+    
+    // Add weight and dimensions if provided
+    if(weight) productData.weight = Number(weight);
+    if(length) productData.length = Number(length);
+    if(breadth) productData.breadth = Number(breadth);
+    if(height) productData.height = Number(height);
 
     // Add sizes only when product has size
     if (sizes) {
@@ -221,5 +227,32 @@ const updateProduct = async (req, res) => {
 };
 
 
+// Fix negative stock quantities
+const fixNegativeStock = async (req, res) => {
+  try {
+    const productsWithNegativeStock = await productModel.find({ quantity: { $lt: 0 } });
+    
+    if (productsWithNegativeStock.length === 0) {
+      return res.json({ success: true, message: "No products with negative stock found" });
+    }
+    
+    const updates = [];
+    for (const product of productsWithNegativeStock) {
+      await productModel.findByIdAndUpdate(product._id, { quantity: 0 });
+      updates.push({ name: product.name, oldQuantity: product.quantity, newQuantity: 0 });
+    }
+    
+    res.json({ 
+      success: true, 
+      message: `Fixed ${updates.length} products with negative stock`,
+      updates: updates
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
 
-export { addProduct, listProducts, removeProduct,singleProduct, updateProduct };
+
+
+export { addProduct, listProducts, removeProduct,singleProduct, updateProduct, fixNegativeStock };
