@@ -152,6 +152,10 @@ try{
     if(!items || items.length === 0) {
         return res.status(400).json({success:false,message:'Order must contain at least one item'});
     }
+    
+    if(!amount || amount <= 0) {
+        return res.status(400).json({success:false,message:'Invalid order amount'});
+    }
 
     const orderData={
         userId,
@@ -168,10 +172,14 @@ try{
 
     console.log('Razorpay order created in DB, creating Razorpay payment order...');
 
+    // Razorpay requires amount in paise (smallest currency unit) as INTEGER
+    const amountInPaise = Math.round(amount * 100);
+    console.log('Order amount:', amount, 'Amount in paise:', amountInPaise);
+
     const options={
-        amount:amount*100,
-        currency:currency.toUpperCase(),
-        receipt:newOrder._id.toString(),
+        amount: amountInPaise,
+        currency: currency.toUpperCase(),
+        receipt: newOrder._id.toString(),
     }
 
     // Use promisified version instead of callback
