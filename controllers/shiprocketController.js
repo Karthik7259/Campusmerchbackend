@@ -1,4 +1,5 @@
 import { createShiprocketClient } from '../config/shiprocket.js';
+import orderModel from '../models/OrderModel.js';
 
 // 1. Check serviceability and get shipping charges
 export const checkServiceability = async (req, res) => {
@@ -409,6 +410,80 @@ export const createCompleteOrder = async (req) => {
     }
 };
 
+// Webhook handler for Shiprocket status updates
+export const shiprocketWebhook = async (req, res) => {
+    try {
+        console.log('Shiprocket webhook received:', JSON.stringify(req.body, null, 2));
+        
+        const webhookData = req.body;
+        
+        // Extract order ID and status from webhook
+        // Shiprocket sends different formats, handle both
+        const orderId = webhookData.order_id || webhookData.order?.order_id;
+        const currentStatus = webhookData.current_status || webhookData.status;
+        const awbCode = webhookData.awb_code || webhookData.awb;
+        
+        if (!orderId) {
+            console.log('No order ID found in webhook');
+            return res.status(200).json({ success: true, message: 'No order ID' });
+        }
+        
+        // Find order in database by shiprocket_order_id
+        const order = await orderModel.findOne({ shiprocket_order_id: orderId });
+        
+        if (!order) {
+            console.log(`Order not found for Shiprocket order ID: ${orderId}`);
+            return res.status(200).json({ success: true, message: 'Order not found' });
+        }
+        
+        // Map Shiprocket status to our order status
+        let orderStatus = order.status; // Keep current status by default
+        
+        // Common Shiprocket statuses:
+        // - PICKUP_SCHEDULED, PICKUP_GENERATED, MANIFESTED, PICKED_UP
+        // - IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED
+        // - RTO_INITIATED, RTO_DELIVERED, CANCELLED
+        
+        const statusLower = currentStatus?.toLowerCase() || '';
+        
+        if (statusLower.includes('picked') || statusLower.includes('pickup_complete') || statusLower.includes('manifested')) {
+            orderStatus = 'Shipped';
+        } else if (statusLower.includes('in_transit') || statusLower.includes('in transit') || statusLower.includes('out_for_delivery')) {
+            orderStatus = 'Shipped';
+        } else if (statusLower.includes('delivered')) {
+            orderStatus = 'Delivered';
+        } else if (statusLower.includes('cancelled') || statusLower.includes('rto')) {
+            orderStatus = 'Cancelled';
+        }
+        
+        // Update order status and AWB if changed
+        const updateData = { status: orderStatus };
+        if (awbCode && !order.awb_code) {
+            updateData.awb_code = awbCode;
+        }
+        
+        await orderModel.findByIdAndUpdate(order._id, updateData);
+        
+        console.log(`Order ${order._id} status updated to: ${orderStatus} (Shiprocket: ${currentStatus})`);
+        
+        // Send success response to Shiprocket
+        res.status(200).json({ 
+            success: true, 
+            message: 'Webhook processed successfully',
+            orderId: order._id,
+            newStatus: orderStatus
+        });
+        
+    } catch (error) {
+        console.error('Shiprocket webhook error:', error);
+        // Always return 200 to prevent Shiprocket from retrying
+        res.status(200).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+};
+
 export default {
     checkServiceability,
     createShiprocketOrder,
@@ -419,5 +494,6 @@ export default {
     generateLabel,
     printInvoice,
     trackShipment,
-    createCompleteOrder
+    createCompleteOrder,
+    shiprocketWebhook
 };

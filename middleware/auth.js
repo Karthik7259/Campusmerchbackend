@@ -7,7 +7,16 @@ const authuser =async (req, res, next) => {
             return res.status(401).json({error:"Access denied."});
         }
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // Ensure req.body exists before setting properties
+        if (!req.body) {
+            req.body = {};
+        }
         req.body.userId = decoded.id;
+        
+        // Also set userId in req for easier access in GET requests
+        req.userId = decoded.id;
+        
         next();
     }catch(err){
         console.log(err);

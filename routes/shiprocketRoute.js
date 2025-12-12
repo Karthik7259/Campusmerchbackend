@@ -8,7 +8,8 @@ import {
     printManifest,
     generateLabel,
     printInvoice,
-    trackShipment
+    trackShipment,
+    shiprocketWebhook
 } from '../controllers/shiprocketController.js';
 
 import adminAuth from '../middleware/adminAuth.js';
@@ -42,5 +43,8 @@ shiprocketRoute.post('/print-invoice', adminAuth, printInvoice);
 
 // Track shipment by AWB code
 shiprocketRoute.get('/track/:awb_code', trackShipment);
+
+// Webhook endpoint for Shiprocket status updates (no auth needed)
+shiprocketRoute.post('/webhook', shiprocketWebhook);
 
 export default shiprocketRoute;
