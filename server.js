@@ -33,7 +33,7 @@ app.use('/api/product',productRouter);
 app.use('/api/cart',cartRouter);
 app.use('/api/order',OrderRouter);
 app.use('/api/college-merchandise',collegeMerchandiseRouter);
-app.use('/api/shiprocket',shiprocketRouter);
+app.use('/api/shipping',shiprocketRouter); // Changed from /api/shiprocket to avoid blocking
 
 // api  endpoints
 
