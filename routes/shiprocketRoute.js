@@ -44,7 +44,12 @@ shiprocketRoute.post('/print-invoice', adminAuth, printInvoice);
 // Track shipment by AWB code
 shiprocketRoute.get('/track/:awb_code', trackShipment);
 
-// Webhook endpoint for Shiprocket status updates (no auth needed)
+// Webhook endpoint for Shiprocket status updates (no auth needed - open access)
 shiprocketRoute.post('/webhook', shiprocketWebhook);
+
+// Test endpoint to verify webhook is accessible
+shiprocketRoute.get('/webhook/test', (req, res) => {
+    res.json({ success: true, message: 'Webhook endpoint is accessible' });
+});
 
 export default shiprocketRoute;
